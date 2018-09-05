@@ -26,9 +26,8 @@
     "format": "prettier \"./src/**/*.ts\" --write",
     "lint": "npx tsc -p ./test/tsconfig.json && tslint \"./src/**/*.ts\"",
     "postinstall": "node scripts/postinstall.js",
-    "precommit": "lint-staged",
     "prepublishOnly": "npx tsc",
-    "prepush": "yarn lint",
+    "prepush": "",
     "publish-dry-run": "tar -tf $(npm pack)",
     "test": "jest"
   },
