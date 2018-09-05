@@ -1,0 +1,10 @@
+{
+    "upstream": "hajekj14/backport",
+    "branches": [],
+    "all": false,
+    "multipleCommits": true,
+    "multipleBranches": true,
+    "labels": [
+        "backport"
+    ]
+}
