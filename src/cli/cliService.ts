@@ -269,7 +269,7 @@ function getPullRequestPayload(
   branch: string,
   commits: Commit[],
   username: string
-): GithubPullRequestPayload {
+): any {
   const backportBranchName = getBackportBranchName(branch, commits);
   const commitRefs = commits
     .map(commit => {
@@ -277,13 +277,32 @@ function getPullRequestPayload(
       return ` - ${commit.message.replace(`(${ref})`, '')} (${ref})`;
     })
     .join('\n');
+  console.log(getPullRequestTitle(branch, commits));
+  console.log(`Backports the following commits to ${branch}:\n${commitRefs}`);
+  console.log(`${username}:${backportBranchName}`);
+  console.log(`${branch}`);
 
   return {
-    title: getPullRequestTitle(branch, commits),
-    body: `Backports the following commits to ${branch}:\n${commitRefs}`,
-    head: `${username}:${backportBranchName}`,
-    base: `${branch}`
+    destination: {
+      branch: {
+        name: branch
+      }
+    },
+    source: {
+      branch: {
+        name: backportBranchName
+      }
+    },
+    title: `Backports the following commits to ${branch}:\n${commitRefs}`
   };
+  /*
+    return {
+      title: getPullRequestTitle(branch, commits),
+      body: `Backports the following commits to ${branch}:\n${commitRefs}`,
+      head: `${username}:${backportBranchName}`,
+      base: `${branch}`
+    };
+    */
 }
 
 async function withSpinner<T>(

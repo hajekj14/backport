@@ -1,11 +1,10 @@
 {
-    "upstream": "hajekj14/backport",
+    "upstream": "jiri-hajek/ra-broker-old",
     "branches": [
-        "test1",
-        "master",
-        "test2"
+        "develop",
+        "master"
     ],
-    "all": false,
+    "all": true,
     "multipleCommits": true,
     "multipleBranches": true,
     "labels": [

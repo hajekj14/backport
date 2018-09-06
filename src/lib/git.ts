@@ -42,7 +42,7 @@ export function deleteRepo(owner: string, repoName: string) {
 }
 
 function getRemoteUrl(owner: string, repoName: string) {
-  return `git@github.com:${owner}/${repoName}`;
+  return `git@bitbucket.org:${owner}/${repoName}`;
 }
 
 function cloneRepo(
@@ -146,7 +146,7 @@ export async function resetAndPullMaster(owner: string, repoName: string) {
 
 export async function verifyGithubSshAuth() {
   try {
-    await exec(`ssh -oBatchMode=yes -T git@github.com`);
+    await exec(`ssh -oBatchMode=yes -T git@bitbucket.org`);
     return true;
   } catch (e) {
     switch (e.code) {
@@ -155,7 +155,7 @@ export async function verifyGithubSshAuth() {
       case 255:
         if (e.stderr.includes('Host key verification failed.')) {
           throw new HandledError(
-            'Host verification of github.com failed. To automatically add it to .ssh/known_hosts run:\nssh -T git@github.com'
+            'Host verification of github.com failed. To automatically add it to .ssh/known_hosts run:\nssh -T git@bitbucket.org'
           );
         } else if (e.stderr.includes('Permission denied')) {
           throw new HandledError(

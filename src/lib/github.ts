@@ -23,7 +23,7 @@ export async function getCommits(
   owner: string,
   repoName: string,
   author: string | null
-): Promise<Commit[]> {
+): Promise<any[]> {
   const query: GithubQuery = {
     access_token: accessToken,
     per_page: 20
@@ -35,18 +35,28 @@ export async function getCommits(
   }
 
   try {
-    const res: AxiosResponse<GithubCommit[]> = await axios(
-      `https://api.github.com/repos/${owner}/${repoName}/commits?${querystring.stringify(
-        query
-      )}`
-    );
+    /*
+      const res: AxiosResponse<GithubCommit[]> = await axios(
+        `https://api.github.com/repos/${owner}/${repoName}/commits?${querystring.stringify(
+          query
+        )}`
+      );
+      */
 
-    const promises = res.data.map(async commit => {
-      const sha = commit.sha;
+    const res: AxiosResponse<GithubCommit[]> = await axios({
+      url: `https://api.bitbucket.org/2.0/repositories/${owner}/${repoName}/commits`,
+      auth: {
+        username: owner,
+        password: query.access_token
+      }
+    });
+
+    const promises = (res.data.values as any).map(async commit => {
+      const sha = commit.hash;
       return {
-        message: getCommitMessage(commit.commit.message),
+        message: getCommitMessage(commit.message),
         sha,
-        pullRequest: await getPullRequestBySha(owner, repoName, sha)
+        // pullRequest: await getPullRequestBySha(owner, repoName, sha)
       };
     });
 
@@ -62,9 +72,19 @@ export async function getCommit(
   sha: string
 ): Promise<Commit> {
   try {
+    /*
     const res: AxiosResponse<GithubCommit> = await axios(
       `https://api.github.com/repos/${owner}/${repoName}/commits/${sha}?access_token=${accessToken}`
     );
+    */
+    const res: any = await axios({
+      url: `https://api.bitbucket.org/2.0/repositories/${owner}/${repoName}/commit/${sha}`,
+      auth: {
+        username: owner,
+        password: accessToken
+      }
+    });
+
     const fullSha = res.data.sha;
     const pullRequest = await getPullRequestBySha(owner, repoName, fullSha);
 
@@ -84,10 +104,20 @@ export async function createPullRequest(
   payload: GithubPullRequestPayload
 ): Promise<PullRequest> {
   try {
+    /*
     const res: AxiosResponse<GithubIssue> = await axios.post(
       `https://api.github.com/repos/${owner}/${repoName}/pulls?access_token=${accessToken}`,
       payload
     );
+    */
+
+    const res: any = await axios.post(`https://api.bitbucket.org/2.0/repositories/${owner}/${repoName}/pullrequests`, payload, {
+      auth: {
+        username: owner,
+        password: accessToken
+      }
+    });
+    console.log(res);
     return {
       html_url: res.data.html_url,
       number: res.data.number
