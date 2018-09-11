@@ -2,6 +2,7 @@
 
 import yargs from 'yargs';
 import flatten from 'lodash.flatten';
+import * as mitsobox from "mitsobox";
 
 import { initSteps } from './steps';
 import { getCombinedConfig, validateOptions } from '../lib/configs';

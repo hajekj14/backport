@@ -1,8 +1,14 @@
 {
-    "upstream": "jiri-hajek/ra-broker-old",
+    "upstream": "rapid-addition/ra-platform-java-preprod",
     "branches": [
-        "develop",
-        "master"
+        {
+            "name": "maintenance/2.4",
+            "checked": true
+        },
+        "maintenance/2.5",
+        "maintenance/2.5.1",
+        "2.2",
+        "2.1"
     ],
     "all": true,
     "multipleCommits": true,

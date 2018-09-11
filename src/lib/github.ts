@@ -15,8 +15,14 @@ import get from 'lodash.get';
 import { HandledError } from './errors';
 
 let accessToken: string;
-function getCommitMessage(message: string) {
-  return message.split('\n')[0].trim();
+let userName: string;
+function getCommitMessage(commit: any) {
+  let msg = "";
+  if (commit.author.user) {
+    msg += commit.author.user.username + "@";
+  }
+  msg += new Date(Date.parse(commit.date)).toLocaleString() + " - " + commit.message.split('\n')[0].trim() + " - " + commit.hash.substr(0, 7);
+  return msg;
 }
 
 export async function getCommits(
@@ -24,6 +30,7 @@ export async function getCommits(
   repoName: string,
   author: string | null
 ): Promise<any[]> {
+
   const query: GithubQuery = {
     access_token: accessToken,
     per_page: 20
@@ -42,19 +49,31 @@ export async function getCommits(
         )}`
       );
       */
-
     const res: AxiosResponse<GithubCommit[]> = await axios({
       url: `https://api.bitbucket.org/2.0/repositories/${owner}/${repoName}/commits`,
       auth: {
-        username: owner,
+        username: userName,
         password: query.access_token
       }
     });
 
+    if (author !== null) {
+      res.data.values = (res.data.values as any).filter(commit => {
+        if (!commit.author.user) {
+          return false;
+        } else {
+          if (commit.author.user.username === author) {
+            return true;
+          }
+          return false;
+        }
+      });
+    }
+
     const promises = (res.data.values as any).map(async commit => {
       const sha = commit.hash;
       return {
-        message: getCommitMessage(commit.message),
+        message: getCommitMessage(commit),
         sha,
         // pullRequest: await getPullRequestBySha(owner, repoName, sha)
       };
@@ -80,7 +99,7 @@ export async function getCommit(
     const res: any = await axios({
       url: `https://api.bitbucket.org/2.0/repositories/${owner}/${repoName}/commit/${sha}`,
       auth: {
-        username: owner,
+        username: userName,
         password: accessToken
       }
     });
@@ -89,9 +108,9 @@ export async function getCommit(
     const pullRequest = await getPullRequestBySha(owner, repoName, fullSha);
 
     return {
-      message: getCommitMessage(res.data.commit.message),
+      message: getCommitMessage(res.data.commit),
       sha: fullSha,
-      pullRequest
+      // pullRequest
     };
   } catch (e) {
     throw getError(e);
@@ -113,14 +132,13 @@ export async function createPullRequest(
 
     const res: any = await axios.post(`https://api.bitbucket.org/2.0/repositories/${owner}/${repoName}/pullrequests`, payload, {
       auth: {
-        username: owner,
+        username: userName,
         password: accessToken
       }
     });
-    console.log(res);
     return {
-      html_url: res.data.html_url,
-      number: res.data.number
+      html_url: res.data.links.html.href,
+      number: res.data.id
     };
   } catch (e) {
     throw getError(e);
@@ -160,6 +178,10 @@ async function getPullRequestBySha(
 
 export function setAccessToken(token: string) {
   accessToken = token;
+}
+
+export function setUserName(user: string) {
+  userName = user;
 }
 
 function getError(e: GithubApiError) {

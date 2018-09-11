@@ -100,7 +100,7 @@ export async function doBackportVersion(
     const payload = getPullRequestPayload(branch, commits, username);
     const pullRequest = await createPullRequest(owner, repoName, payload);
     if (labels.length > 0) {
-      await addLabels(owner, repoName, pullRequest.number, labels);
+      // await addLabels(owner, repoName, pullRequest.number, labels);
     }
     return pullRequest;
   });
@@ -145,6 +145,32 @@ export async function getCommitBySha(
       text: `${chalk.bold('Select commit')} ${chalk.cyan(commit.message)}`
     });
     return commit;
+  } catch (e) {
+    spinner.stop();
+    throw e;
+  }
+}
+
+export async function getCommitByMultipleSha(
+  owner: string,
+  repoName: string,
+  sha: string
+) {
+  const spinner = ora().start();
+  try {
+    const commits = [];
+    const splitedSha = sha.split(" ");
+    let msg = "";
+    for (const entry of splitedSha) {
+      const commit = await getCommit(owner, repoName, entry);
+      commits.push(commit);
+      msg += commit.message + "\n";
+    }
+    spinner.stopAndPersist({
+      symbol: chalk.green('?'),
+      text: `${chalk.bold('Select commit')} ${chalk.cyan(msg)}`
+    });
+    return commits;
   } catch (e) {
     spinner.stop();
     throw e;
@@ -277,10 +303,6 @@ function getPullRequestPayload(
       return ` - ${commit.message.replace(`(${ref})`, '')} (${ref})`;
     })
     .join('\n');
-  console.log(getPullRequestTitle(branch, commits));
-  console.log(`Backports the following commits to ${branch}:\n${commitRefs}`);
-  console.log(`${username}:${backportBranchName}`);
-  console.log(`${branch}`);
 
   return {
     destination: {

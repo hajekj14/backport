@@ -80,6 +80,7 @@
     "lodash.get": "^4.4.2",
     "lodash.isempty": "^4.4.0",
     "lodash.isstring": "^4.0.1",
+    "mitsobox": "^0.1.4",
     "mkdirp": "^0.5.1",
     "ora": "^3.0.0",
     "rimraf": "^2.6.2",
@@ -115,5 +116,9 @@
     "tslint": "^5.11.0",
     "tslint-config-prettier": "^1.14.0",
     "typescript": "^3.0.1"
+  },
+  "pkg": {
+    "scripts": "dist/cli/index.js",
+    "assets": "templates/**/*"
   }
 }

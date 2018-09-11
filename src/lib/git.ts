@@ -82,7 +82,7 @@ function addRemote(owner: string, repoName: string, username: string) {
 }
 
 export function cherrypick(owner: string, repoName: string, sha: string) {
-  return exec(`git cherry-pick ${sha}`, {
+  return exec(`git cherry-pick -x ${sha}`, {
     cwd: env.getRepoPath(owner, repoName)
   });
 }
@@ -130,7 +130,7 @@ export function push(
   username: string,
   branchName: string
 ) {
-  return exec(`git push ${username} ${branchName}:${branchName} --force`, {
+  return exec(`git push origin ${branchName}:${branchName} --force`, {
     cwd: env.getRepoPath(owner, repoName)
   });
 }
