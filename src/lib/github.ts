@@ -28,7 +28,8 @@ function getCommitMessage(commit: any) {
 export async function getCommits(
   owner: string,
   repoName: string,
-  author: string | null
+  author: string | null,
+  page?: any
 ): Promise<any[]> {
 
   const query: GithubQuery = {
@@ -49,8 +50,9 @@ export async function getCommits(
         )}`
       );
       */
+    const commitsUrl = `https://api.bitbucket.org/2.0/repositories/${owner}/${repoName}/commits` + (page ? '?page=' + page : '');
     const res: AxiosResponse<GithubCommit[]> = await axios({
-      url: `https://api.bitbucket.org/2.0/repositories/${owner}/${repoName}/commits`,
+      url: commitsUrl,
       auth: {
         username: userName,
         password: query.access_token
@@ -70,7 +72,22 @@ export async function getCommits(
       });
     }
 
+    if ((res.data as any).next) {
+      (res.data.values as any).push({
+        type: 'next',
+        page: (res.data as any).next.split('?')[1].split('=')[1]
+      });
+    }
+
     const promises = (res.data.values as any).map(async commit => {
+      if (commit.type === 'next') {
+        return {
+          type: 'next',
+          message: 'Next page (' + commit.page + ')',
+          sha: commit.page,
+          // pullRequest: await getPullRequestBySha(owner, repoName, sha)
+        };
+      }
       const sha = commit.hash;
       return {
         message: getCommitMessage(commit),
@@ -104,11 +121,11 @@ export async function getCommit(
       }
     });
 
-    const fullSha = res.data.sha;
-    const pullRequest = await getPullRequestBySha(owner, repoName, fullSha);
+    const fullSha = res.data.hash;
+    // const pullRequest = await getPullRequestBySha(owner, repoName, fullSha);
 
     return {
-      message: getCommitMessage(res.data.commit),
+      message: getCommitMessage(res.data),
       sha: fullSha,
       // pullRequest
     };

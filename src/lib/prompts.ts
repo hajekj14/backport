@@ -19,7 +19,8 @@ export function listProjects(repoNames: string[]) {
 
 export async function listCommits(
   commits: Commit[],
-  isMultipleChoice: boolean
+  isMultipleChoice: boolean,
+  noCheck?: boolean
 ): Promise<Commit[]> {
   const choices = commits.map((c, i) => ({
     name: `${i + 1}. ${c.message}`,
@@ -35,6 +36,9 @@ export async function listCommits(
   });
 
   const selectedCommits = Array.isArray(res) ? res.reverse() : [res];
+  if (noCheck) {
+    return selectedCommits;
+  }
   return isEmpty(selectedCommits)
     ? listCommits(commits, isMultipleChoice)
     : selectedCommits;

@@ -159,7 +159,7 @@ export async function getCommitByMultipleSha(
   const spinner = ora().start();
   try {
     const commits = [];
-    const splitedSha = sha.split(" ");
+    const splitedSha = sha.split(",");
     let msg = "";
     for (const entry of splitedSha) {
       const commit = await getCommit(owner, repoName, entry);
@@ -175,6 +175,27 @@ export async function getCommitByMultipleSha(
     spinner.stop();
     throw e;
   }
+}
+
+export async function getListOfCommits(
+  owner: string,
+  repoName: string,
+  author: string | null,
+  multipleCommits: boolean,
+  commits,
+  noCheck?: boolean
+) {
+  const results = await listCommits(commits, multipleCommits, noCheck);
+  for (const result of results) {
+    if ((result as any).type) {
+      if ((result as any).type === 'next') {
+        const commitsNext = await getCommits(owner, repoName, author, result.sha);
+        const nextList = await getListOfCommits(owner, repoName, author, multipleCommits, commitsNext, true);
+        return results.concat(nextList);
+      }
+    }
+  }
+  return results;
 }
 
 export async function getCommitsByPrompt(
@@ -201,7 +222,14 @@ export async function getCommitsByPrompt(
       );
     }
     spinner.stop();
-    return listCommits(commits, multipleCommits);
+    let selectedCommits = await getListOfCommits(owner, repoName, author, multipleCommits, commits);
+    selectedCommits = selectedCommits.filter(commit => {
+      if (commit.type) {
+        return false;
+      }
+      return true;
+    });
+    return selectedCommits;
   } catch (e) {
     spinner.fail();
     throw e;
