@@ -92,6 +92,7 @@ export async function getCommits(
       return {
         message: getCommitMessage(commit),
         sha,
+        merged: commit.parents.length > 1 ? true : false
         // pullRequest: await getPullRequestBySha(owner, repoName, sha)
       };
     });

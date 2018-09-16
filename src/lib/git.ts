@@ -81,8 +81,8 @@ function addRemote(owner: string, repoName: string, username: string) {
   );
 }
 
-export function cherrypick(owner: string, repoName: string, sha: string) {
-  return exec(`git cherry-pick -x ${sha}`, {
+export function cherrypick(owner: string, repoName: string, sha: string, merged?: boolean) {
+  return exec(`git cherry-pick -x ${(merged ? "-m 1" : "")} ${sha}`, {
     cwd: env.getRepoPath(owner, repoName)
   });
 }

@@ -88,7 +88,7 @@ export async function doBackportVersion(
   });
 
   await sequentially(commits, commit =>
-    cherrypickAndConfirm(owner, repoName, commit.sha)
+    cherrypickAndConfirm(owner, repoName, commit.sha, (commit as any).merged)
   );
 
   await withSpinner(
@@ -275,7 +275,8 @@ function getReferenceShort(commit: Commit) {
 async function cherrypickAndConfirm(
   owner: string,
   repoName: string,
-  sha: string
+  sha: string,
+  merged?: boolean
 ) {
   try {
     await withSpinner(
@@ -286,7 +287,7 @@ async function cherrypickAndConfirm(
           repoName
         )}`
       },
-      () => cherrypick(owner, repoName, sha)
+      () => cherrypick(owner, repoName, sha, merged)
     );
   } catch (e) {
     const hasConflict = e.cmd.includes('git cherry-pick');
@@ -343,7 +344,8 @@ function getPullRequestPayload(
         name: backportBranchName
       }
     },
-    title: `Backports the following commits to ${branch}:\n${commitRefs}`
+    title: `Backports the following commits to ${branch}:\n${commitRefs}`,
+    close_source_branch: true
   };
   /*
     return {

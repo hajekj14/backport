@@ -5,3 +5,6 @@
 /dist
 /yarn-error.log
 backport.exe
+backport-win.exe
+backport-linux
+backport-macos
